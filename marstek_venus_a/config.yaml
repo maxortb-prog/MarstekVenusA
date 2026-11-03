@@ -1,0 +1,114 @@
+name: MarstekVenusA
+version: "1.0.0"
+slug: marstek_venus_a
+description: >-
+  Local UDP bridge between a Marstek Venus A battery (Open API Rev 2.0) and
+  Home Assistant via MQTT discovery, with zero-export load following.
+url: https://github.com/maxortb-prog/MarstekVenusA
+arch:
+  - amd64
+  - aarch64
+init: false
+startup: application
+boot: auto
+host_network: true
+hassio_api: true
+services:
+  - mqtt:want
+options:
+  # --- Device ---
+  device_ip: "192.168.0.45"
+  device_udp_port: 30000
+  device_ble_mac: ""
+  device_type: ""
+  udp_local_port: 0
+  max_power: "800"
+  # --- MQTT ---
+  mqtt_host: "core-mosquitto"
+  mqtt_port: 1883
+  mqtt_username: "mqtt-marstek"
+  mqtt_password: "mqtt-marstek"
+  mqtt_discovery_prefix: "homeassistant"
+  mqtt_base_topic: "MarstekVenusA"
+  mqtt_suggested_area: "MarstekVenusA"
+  # --- Communication (also changeable at runtime in HA) ---
+  queue_enabled: true
+  request_delay: 2
+  request_timeout: 5
+  request_retries: 0
+  # --- Device settings (changeable at runtime in HA) ---
+  dod: 88
+  led: true
+  ble_adv: false
+  passive_power: 0
+  passive_cd_time: 300
+  # --- Enabled queries (changeable at runtime in HA) ---
+  query_device: true
+  query_wifi: true
+  query_ble: true
+  query_battery: true
+  query_pv: true
+  query_es_status: true
+  query_es_mode: true
+  # --- Load following ---
+  lf_enabled: false
+  lf_sensor_topic: "Shelly Phase C RAW"
+  lf_export_reaction: "Rest load"
+  lf_window: 60
+  lf_percentile: 30
+  lf_reserve: 10
+  lf_deadband: 15
+  lf_min_power: 50
+  lf_export_small: -15
+  lf_export_small_time: 5
+  lf_export_large: -50
+  lf_resend_interval: 30
+  lf_cd_time: 120
+  lf_sensor_timeout: 30
+  # --- Logging ---
+  log_level: info
+schema:
+  device_ip: str
+  device_udp_port: port
+  device_ble_mac: "str?"
+  device_type: "str?"
+  udp_local_port: int(0,65535)
+  max_power: list(800|1200)
+  mqtt_host: str
+  mqtt_port: port
+  mqtt_username: "str?"
+  mqtt_password: "password?"
+  mqtt_discovery_prefix: str
+  mqtt_base_topic: str
+  mqtt_suggested_area: "str?"
+  queue_enabled: bool
+  request_delay: float(0,60)
+  request_timeout: float(1,120)
+  request_retries: int(0,20)
+  dod: int(30,88)
+  led: bool
+  ble_adv: bool
+  passive_power: int(-1200,1200)
+  passive_cd_time: int(0,86400)
+  query_device: bool
+  query_wifi: bool
+  query_ble: bool
+  query_battery: bool
+  query_pv: bool
+  query_es_status: bool
+  query_es_mode: bool
+  lf_enabled: bool
+  lf_sensor_topic: "str?"
+  lf_export_reaction: list(Rest load|0 W)
+  lf_window: int(10,300)
+  lf_percentile: int(10,50)
+  lf_reserve: int(0,100)
+  lf_deadband: int(0,100)
+  lf_min_power: int(0,400)
+  lf_export_small: int(-100,0)
+  lf_export_small_time: int(1,30)
+  lf_export_large: int(-400,-10)
+  lf_resend_interval: int(10,60)
+  lf_cd_time: int(30,3600)
+  lf_sensor_timeout: int(5,300)
+  log_level: list(trace|debug|info|warning|error)
