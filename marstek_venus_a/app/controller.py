@@ -167,6 +167,9 @@ class LoadFollower:
         self.fresh_since = now          # up window only uses values after this
         self.settle_until = now         # export checks wait for the device ramp
         self.load_percentile: float | None = None
+        self.calculated: int | None = None      # percentile - reserve, before limits
+        self.up_in: int | None = None           # s until the up window is complete
+        self._up_note: tuple[str, int] | None = None
         self.state = WAITING if self.enabled else OFF
         self._enabled_at = now
         self._timeout_retry_for: int | None = None
@@ -350,17 +353,49 @@ class LoadFollower:
         window = self.o("lf_window")
         start = now - window
         if start < self.fresh_since or not self._covered(start):
+            first = self.samples[0][0] if self.samples else now
+            up_in = round(max(self.fresh_since, first) + window - now)
+            if up_in != self.up_in:
+                self.up_in = max(0, up_in)
+                self.dirty = True
             return
-        p = self.percentile(start, now, self.o("lf_percentile"))
+        if self.up_in != 0:
+            self.up_in = 0
+            self.dirty = True
+        pct = self.o("lf_percentile")
+        p = self.percentile(start, now, pct)
         if p is None:
             return
         self.load_percentile = p + self.setpoint
-        self.dirty = True
         target = self.load_percentile - reserve
-        new = self._limit(round(target))
-        if new - self.setpoint > self.o("lf_deadband") or (new == cap > self.setpoint):
-            self._command(new, f"up, load P{self.o('lf_percentile'):.0f} "
-                               f"{self.load_percentile:.0f} W", now)
+        calculated = round(target)
+        if calculated != self.calculated:
+            self.calculated = calculated
+            self.dirty = True
+        new = self._limit(calculated)
+        deadband = self.o("lf_deadband")
+        min_p = self.o("lf_min_power")
+        go_up = new - self.setpoint > deadband or (new == cap > self.setpoint)
+
+        # debug: why (not) up - logged when the outcome or the value changes
+        if go_up:
+            note = "up"
+        elif calculated > cap and self.setpoint >= cap:
+            note = f"at limit {cap} W"
+        elif 0 < calculated < min_p and self.setpoint == 0:
+            note = f"below minimum {min_p:.0f} W, stays 0 W"
+        elif calculated <= self.setpoint:
+            note = "not above setpoint"
+        else:
+            note = f"within deadband {deadband:.0f} W"
+        if self._up_note is None or self._up_note[0] != note \
+                or abs(self._up_note[1] - calculated) >= 5:
+            self._up_note = (note, calculated)
+            _LOG.debug("Up check: load P%.0f %.0f W - reserve %.0f W = %d W (setpoint %d W) -> %s",
+                       pct, self.load_percentile, reserve, calculated, self.setpoint, note)
+
+        if go_up:
+            self._command(new, f"up, load P{pct:.0f} {self.load_percentile:.0f} W", now)
         self._set_state(LIMITED if target > cap and self.setpoint >= cap else REGULATING)
 
     def _limit(self, value: int) -> int:
@@ -431,6 +466,8 @@ class LoadFollower:
             "load_percentile": None if self.load_percentile is None
             else round(self.load_percentile),
             "limit": self.cap,
+            "calculated_setpoint": self.calculated,
+            "up_in": self.up_in,
             "last_reason": self.last_reason,
             "last_command": self.last_command,
         }

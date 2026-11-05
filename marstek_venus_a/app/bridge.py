@@ -88,6 +88,7 @@ class Bridge:
         self._init_task: asyncio.Task | None = None
         self._bg: set[asyncio.Task] = set()
         self._timeouts_in_row = 0
+        self._recording: set[str] | None = None
         self.udp = UdpClient(
             host=str(opts["device_ip"]),
             port=int(opts["device_udp_port"]),
@@ -142,6 +143,8 @@ class Bridge:
         payload = "" if payload is None else str(payload)
         if retain:
             self.retained[topic] = payload
+        if self._recording is not None:
+            self._recording.add(topic)
         if self.client is None:
             return
         try:
@@ -390,10 +393,13 @@ class Bridge:
             ("setpoint", "Setpoint", "mdi:target"),
             ("load_percentile", "Load (percentile)", "mdi:home-lightning-bolt-outline"),
             ("limit", "Power limit", "mdi:arrow-collapse-up"),
+            ("calculated_setpoint", "Calculated setpoint", "mdi:calculator"),
         ):
             add("sensor", f"lf_{key}", name, stat_t=st,
                 val_tpl=f"{{{{ value_json.{key} }}}}", unit_of_meas="W",
                 dev_cla="power", stat_cla="measurement", ic=icon)
+        add("sensor", "lf_up_in", "Next up check in", stat_t=st,
+            val_tpl="{{ value_json.up_in }}", unit_of_meas="s", ic="mdi:timer-sand")
         add("sensor", "lf_last_reason", "Last command reason", stat_t=st,
             val_tpl="{{ value_json.last_reason }}", ic="mdi:comment-text-outline")
         add("sensor", "lf_last_command", "Last command", stat_t=st,
@@ -447,11 +453,14 @@ class Bridge:
         if self.t_sensor:
             await client.subscribe(self.t_sensor)
             _LOG.info("Load following: grid sensor topic '%s'", self.t_sensor)
+        self._recording = set()
         await self.publish(self.t_avail, "online")
         await self.publish_all_discovery()
         await self.publish_initial_states()
+        initial, self._recording = self._recording, None
         for topic, payload in list(self.retained.items()):  # re-send cached states
-            await self.publish(topic, payload)
+            if topic not in initial:                        # (not twice after a start)
+                await self.publish(topic, payload)
         if self._init_task is None:
             self.start_init()
 
@@ -468,8 +477,10 @@ class Bridge:
     async def set_comm(self, state: str) -> None:
         if state != self.comm_state:
             _LOG.info("Communication established: %s -> %s", self.comm_state, state)
+        changed = state != self.comm_state
         self.comm_state = state
-        await self.publish(self.t_state("communication"), state)
+        if changed or self.retained.get(self.t_state("communication")) != state:
+            await self.publish(self.t_state("communication"), state)
 
     # ======================================================== initialization
     def start_init(self) -> None:

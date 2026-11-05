@@ -170,6 +170,19 @@ class TestController(unittest.TestCase):
         sim.run(260)
         self.assertEqual([c for c in sim.changes() if c[0] > 150], [])
 
+    def test_calculated_setpoint_below_minimum(self):
+        # log 2026-11-05: base load ~51 W -> 41 W calculated, below 50 W -> stays 0 W
+        sim = Sim(steps((0, 51)), noise=0)
+        sim.run(30)
+        self.assertGreater(sim.lf.up_in, 0)                  # window not complete yet
+        sim.run(120)
+        self.assertEqual(sim.lf.up_in, 0)
+        self.assertEqual(sim.lf.calculated, 41)
+        self.assertEqual(sim.lf.setpoint, 0)
+        sim.opts["lf_min_power"] = 30
+        sim.run(130)
+        self.assertEqual(sim.lf.setpoint, 41)
+
     def test_export_reaction_zero(self):
         sim = Sim(steps((0, 300), (200, 200)), lf_export_reaction=REACTION_ZERO)
         sim.run(230)

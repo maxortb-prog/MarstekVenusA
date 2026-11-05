@@ -22,7 +22,7 @@ and Home Assistant via MQTT discovery, with zero-export load following.
 | … Control | Operating mode, Passive power (= limit for load following), Passive countdown, Apply mode |
 | … Settings | Depth of discharge, LED, Bluetooth advertising |
 | … Communication | Queue settings (Apply settings), requests / responses / timeouts, round-trip time |
-| … Load following | Switch, settings, State, Setpoint, Load (percentile), Power limit, last command |
+| … Load following | Switch, settings, State, Setpoint, Load (percentile), Calculated setpoint, Power limit, Next up check in, last command |
 | … Device info / WiFi / Bluetooth / Battery / PV / Energy system / Mode | one per query, with *Enable query* and *Request* |
 
 *Total PV energy (corrected)* = device value × 10 (firmware 150 reports it 10× too small).
@@ -88,7 +88,7 @@ about reserve + 13 W. The controller always calculates with the measured grid va
 | ERROR (red) | failures, rejected commands |
 | WARNING (yellow) | timeouts, late answers, sensor timeout |
 | INFO (green) | every setpoint change with reason, initialization |
-| DEBUG (cyan) | resends, queue, state changes |
+| DEBUG (cyan) | *Up check* (why the controller regulates up or not), resends, queue, state changes |
 | TRACE (grey) | raw UDP / MQTT traffic |
 
 ## Migration from BalconyPowerPlant

@@ -22,7 +22,7 @@ und Home Assistant per MQTT Discovery, mit Lastfolge / Nulleinspeisung.
 | … Control | Betriebsart, Passive power (= Grenze für die Lastfolge), Passive countdown, Apply mode |
 | … Settings | Entladetiefe (DOD), LED, Bluetooth-Advertising |
 | … Communication | Warteschlangen-Einstellungen (Apply settings), Anfragen / Antworten / Timeouts, Antwortzeit |
-| … Load following | Schalter, Einstellungen, Zustand, Sollwert, Last (Perzentil), Leistungsgrenze, letzter Befehl |
+| … Load following | Schalter, Einstellungen, Zustand, Sollwert, Last (Perzentil), berechneter Sollwert, Leistungsgrenze, nächste Prüfung Hochregeln, letzter Befehl |
 | … Device info / WiFi / Bluetooth / Battery / PV / Energy system / Mode | je Abfrage eines, mit *Enable query* und *Request* |
 
 *Total PV energy (corrected)* = Gerätewert × 10 (Firmware 150 liefert ihn 10× zu klein).
@@ -88,7 +88,7 @@ bei etwa Reserve + 13 W. Der Regler rechnet immer mit dem gemessenen Netzwert.
 | ERROR (rot) | Fehler, abgelehnte Befehle |
 | WARNING (gelb) | Timeouts, späte Antworten, Sensor-Timeout |
 | INFO (grün) | jede Sollwertänderung mit Grund, Initialisierung |
-| DEBUG (cyan) | wiederholtes Senden, Warteschlange, Zustandswechsel |
+| DEBUG (cyan) | *Up check* (warum hochgeregelt wird oder nicht), wiederholtes Senden, Warteschlange, Zustandswechsel |
 | TRACE (grau) | roher UDP- / MQTT-Verkehr |
 
 ## Umstieg von BalconyPowerPlant
