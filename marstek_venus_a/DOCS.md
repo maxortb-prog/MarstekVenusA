@@ -27,6 +27,13 @@ and Home Assistant via MQTT discovery, with zero-export load following.
 
 *Total PV energy (corrected)* = device value × 10 (firmware 150 reports it 10× too small).
 
+**Energy counters are checked for plausibility.** The device occasionally reports a single
+nonsense value (e.g. ~4.3e14 Wh). Values below 0 or ≥ 2^31, decreases and jumps larger than
+max power × time × 1.5 + 100 Wh are ignored (WARNING in the log), HA keeps the last valid
+value. A new level confirmed by 3 queries in a row is accepted (e.g. a real counter reset).
+Wrong values that already reached the energy dashboard: *Developer tools → Statistics →
+Adjust a statistic*.
+
 All entities become unavailable when *Communication established* is **OFF**
 (add-on stopped, or set by the broker via the MQTT last will after a crash).
 

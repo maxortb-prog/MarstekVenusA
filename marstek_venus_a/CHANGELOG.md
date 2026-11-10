@@ -3,6 +3,18 @@
 All notable changes to this add-on. / Alle Änderungen an diesem Add-on.
 Format: [Keep a Changelog](https://keepachangelog.com), [Semantic Versioning](https://semver.org).
 
+## [1.0.2] – 2026-11-10
+
+### Fixed / Behoben
+- **Plausibility filter for energy counters** (all `total_increasing` fields). Log 2026-11-09:
+  the device reported single nonsense values (Total PV energy ~4.3e14 Wh raw, Total grid
+  output ~4.3e14 Wh); HA counted the drop back as a meter reset → TWh in the energy dashboard.
+  Rejected: values < 0 or ≥ 2^31, decreases (also to 0), jumps larger than
+  max power × time × 1.5 + 100 Wh (PV: at least 2000 W). The last valid value is kept
+  (WARNING). A new level confirmed by 3 queries in a row is accepted (INFO).
+  / Plausibilitätsfilter für Energiezähler: unplausible Werte werden verworfen, HA behält
+  den letzten gültigen Wert; 3 Bestätigungen hintereinander → neuer Stand übernommen.
+
 ## [1.0.1] – 2026-11-05
 
 ### Added / Neu

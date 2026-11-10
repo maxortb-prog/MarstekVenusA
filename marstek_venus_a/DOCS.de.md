@@ -27,6 +27,13 @@ und Home Assistant per MQTT Discovery, mit Lastfolge / Nulleinspeisung.
 
 *Total PV energy (corrected)* = Gerätewert × 10 (Firmware 150 liefert ihn 10× zu klein).
 
+**Energiezähler werden auf Plausibilität geprüft.** Das Gerät liefert gelegentlich einen
+einzelnen Unsinnswert (z. B. ~4,3 × 10¹⁴ Wh). Werte unter 0 oder ≥ 2³¹, Rückgänge und
+Sprünge größer als Maximalleistung × Zeit × 1,5 + 100 Wh werden ignoriert (WARNING im Log),
+HA behält den letzten gültigen Wert. Ein neuer Stand, den 3 Abfragen hintereinander
+bestätigen, wird übernommen (z. B. echter Zählerreset). Falsche Werte, die schon im
+Energie-Dashboard gelandet sind: *Entwicklerwerkzeuge → Statistiken → Statistik anpassen*.
+
 Alle Entitäten werden unverfügbar, wenn *Communication established* **OFF** ist
 (Add-on gestoppt, oder vom Broker per MQTT Last Will nach einem Absturz gesetzt).
 
