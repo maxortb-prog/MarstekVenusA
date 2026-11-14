@@ -54,6 +54,13 @@ def _pv_fields() -> tuple[Field, ...]:
             Field(f"pv{i}_state", f"PV{i} working", component="binary_sensor",
                   device_class="running", diagnostic=True),
         ]
+        if i == 1:
+            # Firmware 150 reports pv1_power 10x too high (0.1 W), PV2-4 are correct:
+            # 2026-11-14 PV1 1543 W, PV2-4 310/163/39 W, ES.GetStatus pv_power ~700 W.
+            # / FW 150 liefert pv1_power 10x zu hoch, PV2-4 stimmen.
+            out.append(Field("pv1_power_corrected", "PV1 power (corrected)", unit="W",
+                             device_class="power", state_class="measurement",
+                             source="pv1_power", factor=0.1))
     return tuple(out)
 
 

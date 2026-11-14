@@ -3,6 +3,14 @@
 All notable changes to this add-on. / Alle Änderungen an diesem Add-on.
 Format: [Keep a Changelog](https://keepachangelog.com), [Semantic Versioning](https://semver.org).
 
+## [1.0.4] – 2026-11-14
+
+### Added / Neu
+- Entity *PV1 power (corrected)* = PV1 power ÷ 10. Firmware 150 reports PV1 power 10× too
+  high (1543 W while PV2–4 showed 310 / 163 / 39 W and the total PV power ~700 W); PV2–4
+  are correct. The raw value is kept; its plausibility range is 0–30 000 W.
+  / Neue Entität *PV1 power (corrected)* = Rohwert ÷ 10 (FW 150 liefert PV1 10× zu hoch).
+
 ## [1.0.3] – 2026-11-14
 
 ### Fixed / Behoben

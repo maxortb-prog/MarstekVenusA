@@ -139,6 +139,18 @@ class TestValueFilter(unittest.TestCase):
         self.assertEqual(v("es_mode", foo=4.3e10)["foo"], 123456)  # overflow
         self.assertEqual(v("es_mode", mode="Passive", id=4.3e10)["mode"], "Passive")
 
+    def test_pv1_power_corrected_2026_11_14(self):
+        from marstek_api import QUERIES, normalize
+        data = normalize(QUERIES["pv"], {"pv1_power": 1543, "pv2_power": 310,
+                                         "pv3_power": 163, "pv4_power": 39})
+        self.assertAlmostEqual(data["pv1_power_corrected"], 154.3)
+        self.assertEqual(data["pv2_power"], 310)
+        v = Values()
+        out = v("pv", pv1_power=4000, pv1_power_corrected=400.0)   # strong sun
+        self.assertEqual((out["pv1_power"], out["pv1_power_corrected"]), (4000, 400.0))
+        out = v("pv", pv1_power=4.3e10, pv1_power_corrected=4.3e9)  # overflow
+        self.assertEqual((out["pv1_power"], out["pv1_power_corrected"]), (4000, 400.0))
+
     def test_energy_counter_still_checked(self):
         v = Values()
         v("es_status", total_pv_energy=20_590)

@@ -26,6 +26,7 @@ and Home Assistant via MQTT discovery, with zero-export load following.
 | … Device info / WiFi / Bluetooth / Battery / PV / Energy system / Mode | one per query, with *Enable query* and *Request* |
 
 *Total PV energy (corrected)* = device value × 10 (firmware 150 reports it 10× too small).
+*PV1 power (corrected)* = device value ÷ 10 (firmware 150 reports PV1 power 10× too high, PV2–4 are correct).
 
 **All values are checked for plausibility.** The firmware occasionally reports a single
 nonsense value in any field (32-bit overflow, e.g. SOC ~4.3e10 %, energy ~4.3e14 Wh).
@@ -37,7 +38,7 @@ Rejected values are logged as WARNING `[plausibility]`, HA keeps the last valid 
 | SOC | outside 0–100 %, or change > 5 % + 2 %/min (accepted after 3 confirmations) |
 | battery temperature | outside −30…80 °C |
 | grid / off-grid / battery power | outside ±2 × max power |
-| PV power / voltage / current | outside 0–3000 W / 0–100 V / 0–30 A |
+| PV power / voltage / current | outside 0–3000 W / 0–100 V / 0–30 A (raw PV1 power: 0–30 000 W) |
 | CT power | outside ±25 000 W |
 | capacities | outside 0–20 000 Wh |
 | WiFi signal | outside −120…0 dBm |

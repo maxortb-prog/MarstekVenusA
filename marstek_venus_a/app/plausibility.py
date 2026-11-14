@@ -54,7 +54,9 @@ RANGES: dict[str, tuple[float | str, float | str]] = {
     "ongrid_power": ("-2xmax", "2xmax"), "offgrid_power": ("-2xmax", "2xmax"),
     "bat_power": ("-2xmax", "2xmax"),
     "pv_power": (0, 3000),
-    **{f"pv{i}_power": (0, 3000) for i in range(1, 5)},
+    **{f"pv{i}_power": (0, 3000) for i in range(2, 5)},
+    "pv1_power": (0, 30000),            # raw value is 10x too high on FW 150
+    "pv1_power_corrected": (0, 3000),
     **{f"pv{i}_voltage": (0, 100) for i in range(1, 5)},
     **{f"pv{i}_current": (0, 30) for i in range(1, 5)},
     "a_power": (-25000, 25000), "b_power": (-25000, 25000),

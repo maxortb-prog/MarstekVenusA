@@ -26,6 +26,7 @@ und Home Assistant per MQTT Discovery, mit Lastfolge / Nulleinspeisung.
 | … Device info / WiFi / Bluetooth / Battery / PV / Energy system / Mode | je Abfrage eines, mit *Enable query* und *Request* |
 
 *Total PV energy (corrected)* = Gerätewert × 10 (Firmware 150 liefert ihn 10× zu klein).
+*PV1 power (corrected)* = Gerätewert ÷ 10 (Firmware 150 liefert PV1 power 10× zu hoch, PV2–4 stimmen).
 
 **Alle Werte werden auf Plausibilität geprüft.** Die Firmware liefert gelegentlich in
 irgendeinem Feld einen einzelnen Unsinnswert (32-Bit-Überlauf, z. B. SOC ~4,3 × 10¹⁰ %,
@@ -38,7 +39,7 @@ HA behält den letzten gültigen Wert.
 | SOC | außerhalb 0–100 % oder Änderung > 5 % + 2 %/min (nach 3 Bestätigungen übernommen) |
 | Batterietemperatur | außerhalb −30…80 °C |
 | Netz- / Off-Grid- / Batterieleistung | außerhalb ±2 × Maximalleistung |
-| PV-Leistung / -Spannung / -Strom | außerhalb 0–3000 W / 0–100 V / 0–30 A |
+| PV-Leistung / -Spannung / -Strom | außerhalb 0–3000 W / 0–100 V / 0–30 A (PV1-Rohwert: 0–30.000 W) |
 | CT-Leistung | außerhalb ±25.000 W |
 | Kapazitäten | außerhalb 0–20.000 Wh |
 | WLAN-Signal | außerhalb −120…0 dBm |
