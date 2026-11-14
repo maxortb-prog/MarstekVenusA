@@ -24,7 +24,7 @@ from typing import Any
 import aiomqtt
 
 from config import OptionsStore
-from energy_filter import EnergyFilter
+from plausibility import ValueFilter
 from controller import EXPORT_REACTIONS, NUMBERS as LF_NUMBERS, STATES as LF_STATES, LoadFollower
 from logger import get_logger, set_level
 from marstek_api import (
@@ -90,7 +90,7 @@ class Bridge:
         self._bg: set[asyncio.Task] = set()
         self._timeouts_in_row = 0
         self._recording: set[str] | None = None
-        self.energy = EnergyFilter(lambda: self.opts.max_power)
+        self.plaus = ValueFilter(lambda: self.opts.max_power)
         self.udp = UdpClient(
             host=str(opts["device_ip"]),
             port=int(opts["device_udp_port"]),
@@ -644,10 +644,10 @@ class Bridge:
     def _query_handler(self, q: Query):
         async def handler(result: dict[str, Any], late: bool) -> None:
             data = normalize(q, result)
-            for f in q.fields:                  # plausibility of energy counters
-                if f.state_class == "total_increasing" and f.key in data:
-                    data[f.key] = self.energy.check(f"{q.key}.{f.key}",
-                                                    f"{q.device} {f.name}", data[f.key])
+            # plausibility of every value (firmware sends single overflow values)
+            self.plaus.apply(q.key, q.device, data,
+                             {f.key for f in q.fields if f.state_class == "total_increasing"},
+                             {f.key: f.name for f in q.fields})
             await self.publish(self.t_state(q.key), data)
             if q.key not in self._has_data:
                 self._has_data.add(q.key)

@@ -3,6 +3,22 @@
 All notable changes to this add-on. / Alle Änderungen an diesem Add-on.
 Format: [Keep a Changelog](https://keepachangelog.com), [Semantic Versioning](https://semver.org).
 
+## [1.0.3] – 2026-11-14
+
+### Fixed / Behoben
+- **Plausibility checks for all device values** (`plausibility.py`, was `energy_filter.py`).
+  Log 2026-11-12: SOC ~4.3e10 % – the firmware overflow value (~2^32 × scale) can appear
+  in any field. / Plausibilitätsprüfung für alle Gerätewerte.
+  - every number: |value| < 2^31 / jede Zahl: Betrag < 2³¹
+  - physical ranges: SOC 0–100 %, battery temperature −30…80 °C, grid / off-grid /
+    battery power ±2 × max power, PV power 0–3000 W, PV voltage 0–100 V, PV current
+    0–30 A, CT power ±25 000 W, capacities 0–20 000 Wh, WiFi signal −120…0 dBm
+  - SOC: change ≤ 5 % + 2 %/min, a new level confirmed by 3 queries in a row is accepted
+  - takeover reference (ongrid_power) outside ±2 × max power is ignored and read again
+  - energy counters as in 1.0.2
+  Rejected values: WARNING `[plausibility]`, HA keeps the last valid value.
+  / Verworfene Werte: WARNING, HA behält den letzten gültigen Wert.
+
 ## [1.0.2] – 2026-11-10
 
 ### Fixed / Behoben

@@ -27,10 +27,21 @@ and Home Assistant via MQTT discovery, with zero-export load following.
 
 *Total PV energy (corrected)* = device value × 10 (firmware 150 reports it 10× too small).
 
-**Energy counters are checked for plausibility.** The device occasionally reports a single
-nonsense value (e.g. ~4.3e14 Wh). Values below 0 or ≥ 2^31, decreases and jumps larger than
-max power × time × 1.5 + 100 Wh are ignored (WARNING in the log), HA keeps the last valid
-value. A new level confirmed by 3 queries in a row is accepted (e.g. a real counter reset).
+**All values are checked for plausibility.** The firmware occasionally reports a single
+nonsense value in any field (32-bit overflow, e.g. SOC ~4.3e10 %, energy ~4.3e14 Wh).
+Rejected values are logged as WARNING `[plausibility]`, HA keeps the last valid value.
+
+| Check | Rejected |
+|---|---|
+| every number | absolute value ≥ 2^31 |
+| SOC | outside 0–100 %, or change > 5 % + 2 %/min (accepted after 3 confirmations) |
+| battery temperature | outside −30…80 °C |
+| grid / off-grid / battery power | outside ±2 × max power |
+| PV power / voltage / current | outside 0–3000 W / 0–100 V / 0–30 A |
+| CT power | outside ±25 000 W |
+| capacities | outside 0–20 000 Wh |
+| WiFi signal | outside −120…0 dBm |
+| energy counters | < 0, ≥ 2^31, decrease, jump > max power × time × 1.5 + 100 Wh (PV: ≥ 2000 W); accepted after 3 confirmations |
 Wrong values that already reached the energy dashboard: *Developer tools → Statistics →
 Adjust a statistic*.
 

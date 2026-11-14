@@ -194,6 +194,11 @@ class LoadFollower:
         except (TypeError, ValueError):
             _LOG.warning("Reference from %s unusable: ongrid_power=%r", source, ongrid_power)
             return
+        limit = 2 * int(getattr(self.opts, "max_power", 800))
+        if abs(value) > limit:      # firmware overflow value (plausibility, v1.0.3)
+            _LOG.warning("Reference from %s implausible: ongrid_power=%g (outside +-%d W) "
+                         "- ignored, reading again", source, value, limit)
+            return
         self.reference = value
         self._ref_pending = False
         _LOG.info("Reference from %s: device output %.0f W", source, value)

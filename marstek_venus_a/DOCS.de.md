@@ -27,11 +27,22 @@ und Home Assistant per MQTT Discovery, mit Lastfolge / Nulleinspeisung.
 
 *Total PV energy (corrected)* = Gerätewert × 10 (Firmware 150 liefert ihn 10× zu klein).
 
-**Energiezähler werden auf Plausibilität geprüft.** Das Gerät liefert gelegentlich einen
-einzelnen Unsinnswert (z. B. ~4,3 × 10¹⁴ Wh). Werte unter 0 oder ≥ 2³¹, Rückgänge und
-Sprünge größer als Maximalleistung × Zeit × 1,5 + 100 Wh werden ignoriert (WARNING im Log),
-HA behält den letzten gültigen Wert. Ein neuer Stand, den 3 Abfragen hintereinander
-bestätigen, wird übernommen (z. B. echter Zählerreset). Falsche Werte, die schon im
+**Alle Werte werden auf Plausibilität geprüft.** Die Firmware liefert gelegentlich in
+irgendeinem Feld einen einzelnen Unsinnswert (32-Bit-Überlauf, z. B. SOC ~4,3 × 10¹⁰ %,
+Energie ~4,3 × 10¹⁴ Wh). Verworfene Werte stehen als WARNING `[plausibility]` im Log,
+HA behält den letzten gültigen Wert.
+
+| Prüfung | Verworfen |
+|---|---|
+| jede Zahl | Betrag ≥ 2³¹ |
+| SOC | außerhalb 0–100 % oder Änderung > 5 % + 2 %/min (nach 3 Bestätigungen übernommen) |
+| Batterietemperatur | außerhalb −30…80 °C |
+| Netz- / Off-Grid- / Batterieleistung | außerhalb ±2 × Maximalleistung |
+| PV-Leistung / -Spannung / -Strom | außerhalb 0–3000 W / 0–100 V / 0–30 A |
+| CT-Leistung | außerhalb ±25.000 W |
+| Kapazitäten | außerhalb 0–20.000 Wh |
+| WLAN-Signal | außerhalb −120…0 dBm |
+| Energiezähler | < 0, ≥ 2³¹, Rückgang, Sprung > Maximalleistung × Zeit × 1,5 + 100 Wh (PV: ≥ 2000 W); nach 3 Bestätigungen übernommen | Falsche Werte, die schon im
 Energie-Dashboard gelandet sind: *Entwicklerwerkzeuge → Statistiken → Statistik anpassen*.
 
 Alle Entitäten werden unverfügbar, wenn *Communication established* **OFF** ist
